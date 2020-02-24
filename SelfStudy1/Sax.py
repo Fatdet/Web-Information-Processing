@@ -1,25 +1,65 @@
 import xml.sax
 
-class Parser(xml.sax.ContentHandler):
-    hashTable = {}
-    def startElement(self, name, attrs):      
-        key = name
-        if key in self.hashTable.keys():
-            count = self.hashTable[key]
-            self.hashTable[key] = count + 1
-        else:
-            self.hashTable[key] = 1
+class ArticleCounter(xml.sax.ContentHandler):
+    count = 0
+    def startElement(self, name, attrs):     
+        if name == "article":
+            self.count = self.count + 1
         
-
-    
     def startDocument(self):
-        self.hashTable = {}
+        self.count = 0
 
     def endDocument(self):
-        for k, v in self.hashTable.items():
-            print(k, v)
+        print(self.count)
+
+class ArticleInJournalCounter(xml.sax.ContentHandler):
+    count = 0
+    inArticle = False
+    journalFound = False
+    def startElement(self, name, attrs):     
+        if name == "journal":
+            if self.inArticle == True:
+                self.journalFound = True
+        if name == "article":
+            self.inArticle = True  
+    
+    def startDocument(self):
+        self.count = 0
+
+    def endDocument(self):
+        print(self.count)
+    
+    def endElement(self, name):
+        if name == "article":
+            if self.journalFound == True:
+                self.count = self.count + 1
+                self.journalFound = False
+
+
+class Article(xml.sax.ContentHandler):
+    count = 0
+    inArticle = False
+    journalFound = False
+    def startElement(self, name, attrs):     
+        if name == "journal":
+            if self.inArticle == True:
+                self.journalFound = True
+        if name == "article":
+            self.inArticle = True  
+    
+    def startDocument(self):
+        self.count = 0
+
+    def endDocument(self):
+        print(self.count)
+    
+    def endElement(self, name):
+        if name == "article":
+            if self.journalFound == True:
+                self.count = self.count + 1
+                self.journalFound = False
 
 parser = xml.sax.make_parser()
-parser.setContentHandler(Parser())
+parser.setContentHandler(ArticleInJournalCounter())
 parser.parse(open("dblp.xml","r"))
 
