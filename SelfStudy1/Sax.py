@@ -1,9 +1,5 @@
 import xml.sax
-
-class EResolver(xml.sax.handler.EntityResolver):
-    def resolveEntity(self,publicId,systemId):
-        print (" resolveEntity  ",publicId,systemId)
-        sys.exit()
+import datetime
 
 class ArticleCounter(xml.sax.ContentHandler):
     count = 0
@@ -100,12 +96,14 @@ class ArticleWithAuthorsCounter(xml.sax.ContentHandler):
     def endDocument(self):
         print(self.count)
 
-
+dateNow = datetime.datetime.now()
 parser = xml.sax.make_parser()
+parser.setContentHandler(ArticleCounter())
+parser.parse(open("dblp.xml","r"))
 parser.setContentHandler(ArticleInJournalCounter())
-parser.setEntityResolver(EResolver())
-parser.parse(open("dblpSubsetA.xml","r"))
+parser.parse(open("dblp.xml","r"))
 parser.setContentHandler(ArticleInJournalDuring1990Counter())
-parser.parse(open("dblpSubsetA.xml","r"))
+parser.parse(open("dblp.xml","r"))
 parser.setContentHandler(ArticleWithAuthorsCounter())
-parser.parse(open("dblpSubsetA.xml","r"))
+parser.parse(open("dblp.xml","r"))
+print(datetime.datetime.now() - dateNow)
