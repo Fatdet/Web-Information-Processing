@@ -1,5 +1,10 @@
 import xml.sax
 
+class EResolver(xml.sax.handler.EntityResolver):
+    def resolveEntity(self,publicId,systemId):
+        print (" resolveEntity  ",publicId,systemId)
+        sys.exit()
+
 class ArticleCounter(xml.sax.ContentHandler):
     count = 0
     def startElement(self, name, attrs):     
@@ -36,30 +41,62 @@ class ArticleInJournalCounter(xml.sax.ContentHandler):
                 self.journalFound = False
 
 
-class Article(xml.sax.ContentHandler):
+class ArticleInJournalDuring1990Counter(xml.sax.ContentHandler):
     count = 0
     inArticle = False
     journalFound = False
+    yearFound = False
+    is1990 = False
+    yearText = ""
     def startElement(self, name, attrs):     
         if name == "journal":
             if self.inArticle == True:
                 self.journalFound = True
         if name == "article":
-            self.inArticle = True  
-    
+            self.inArticle = True
+
+        if name == "year":
+            self.yearFound = True
+
+    def characters(self, content):
+        if self.yearFound == True:
+            self.yearText += content
+
     def startDocument(self):
         self.count = 0
 
     def endDocument(self):
         print(self.count)
     
+class ArticleWithAuthorsCounter(xml.sax.ContentHandler):
+    count = 0
+    inArticle = False
+    authorCounter = 0
+    def startElement(self, name, attrs):     
+        if name == "article":
+            self.inArticle = True
+        if name == "author":
+            if self.inArticle == True:
+                self.authorCounter = self.authorCounter + 1
+
     def endElement(self, name):
         if name == "article":
-            if self.journalFound == True:
-                self.count = self.count + 1
-                self.journalFound = False
+            self.inArticle = False
+            if self.authorCounter > 7:
+                self.count += 1
+            self.authorCounter = 0
+    def startDocument(self):
+        self.count = 0
+
+    def endDocument(self):
+        print(self.count)
+
 
 parser = xml.sax.make_parser()
 parser.setContentHandler(ArticleInJournalCounter())
-parser.parse(open("dblp.xml","r"))
-
+parser.setEntityResolver(EResolver())
+parser.parse(open("dblpSubsetA.xml","r"))
+parser.setContentHandler(ArticleInJournalDuring1990Counter())
+parser.parse(open("dblpSubsetA.xml","r"))
+parser.setContentHandler(ArticleWithAuthorsCounter())
+parser.parse(open("dblpSubsetA.xml","r"))
