@@ -46,7 +46,6 @@ class ArticleInJournalDuring1990Counter(xml.sax.ContentHandler):
     inArticle = False
     journalFound = False
     yearFound = False
-    is1990 = False
     yearText = ""
     def startElement(self, name, attrs):     
         if name == "journal":
@@ -61,7 +60,17 @@ class ArticleInJournalDuring1990Counter(xml.sax.ContentHandler):
     def characters(self, content):
         if self.yearFound == True:
             self.yearText += content
-
+            
+    def endElement(self, name):
+        if name == "article":
+            if self.yearText == "1990":
+                self.count += 1
+            self.yearText = ""
+            self.inArticle = False
+        if name == "year":
+            self.yearFound = False
+        if name == "journal":
+            self.journalFound = False
     def startDocument(self):
         self.count = 0
 
